@@ -1,0 +1,21 @@
+name = "SeisSplit"
+uuid = "f05a75a8-0205-5d86-a1c6-ce5881d793bb"
+authors = ["Andy Nowacki <a.nowacki@leeds.ac.uk>"]
+version = "0.1.0"
+
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+Geodesics = "6aaf26a4-c633-11e8-35ae-8904cb805353"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+SAC = "03de775e-c638-11e8-38ea-6915ef5cdf5f"
+Seis = "dd80f4d8-c2f6-58bd-9bd3-4635f134261d"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+
+[extras]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Dates", "Test", "Random"]
