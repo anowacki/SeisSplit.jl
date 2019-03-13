@@ -29,6 +29,13 @@ end
         end
     end
     @testset "Errors" begin
-        # TODO: Add tests for uncertainties when these are fixed.
+        # TODO: Fix uncertainties and remove _broken when done.
+        let t = Seis.read_sac.(joinpath(@__DIR__, "data", "wave.BH").*("E", "N"))
+            e, n = t
+            s = splitting(e, n)
+            @test_broken s.dphi ≈ 0.75 atol=0.05
+            @test_broken s.ddt ≈ 0.013 atol=0.01
+            @test_broken s.dpol ≈ 0.35 atol=0.05
+        end
     end
 end
