@@ -13,6 +13,7 @@ RecipesBase.@recipe function f(s::Result)
     colorbar := false
     layout := (2,3)
     title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\\lambda_2"]
+    titlefontsize --> 11
     
     # Input traces in N-E orientation
     n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
@@ -69,6 +70,8 @@ RecipesBase.@recipe function f(s::Result)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
+        xlabel := "East"
+        ylabel := "North"
         xlim := (-amax, amax)
         ylim := (-amax, amax)
         Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
@@ -81,6 +84,8 @@ RecipesBase.@recipe function f(s::Result)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
+        xlabel := "East"
+        ylabel := "North"
         xlim := (-amax, amax)
         ylim := (-amax, amax)
         n, e = deepcopy.((n_orig, e_orig))
