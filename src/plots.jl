@@ -95,12 +95,23 @@ RecipesBase.@recipe function f(s::Result)
     end
 
     ## λ₂ surface
+    # 10σ - 100σ contours
+    RecipesBase.@series begin
+        subplot := 6
+        seriestype := :contour
+        levels := 10:10:100
+        linewidth := 1
+        linecolor := :black
+        s.dt, s.phi, s.lam2
+    end
+
     # 1σ – 10σ contours
     RecipesBase.@series begin
         subplot := 6
         seriestype := :contour
-        levels --> 1:10
+        levels := 1:10
         linewidth := 1
+        linecolor := :black
         s.dt, s.phi, s.lam2
     end
     # 1σ contour
