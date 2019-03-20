@@ -78,12 +78,14 @@ struct Result{T,V}
     trace1::Seis.Trace{T,V}
     "Windowed input trace 2"
     trace2::Seis.Trace{T,V}
+    window_start
+    window_end
 end
 
 include("plots.jl")
 
 """
-    splitting(t1, t2; nphi=$SPLIT_NPHI, ndt=$SPLIT_NDT, dt_max=$SPLIT_DT_MAX) -> results
+    splitting(t1, t2, window_start=starttime(t1), window_end=endtime(t1); nphi=$SPLIT_NPHI, ndt=$SPLIT_NDT, dt_max=$SPLIT_DT_MAX) -> results
 
 Perform a search over a pair of Seis traces, `t1` and `t2`, for the smallest value of the
 minimum eigenvalue of the covariance matrix between the traces, for a set of `nphi`×`ndt`
@@ -101,10 +103,12 @@ shear wave splitting operators, up to `dt_max` s.
 - `spol` and `dspol`: The source polarisation and an estimate of its uncertainty for the
   best-fitting ϕ and δt.  `spol` is given in ° clockwise of local north.
 """
-function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V};
+function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
+                   window_start=Seis.starttime(t1), window_end=Seis.endtime(t1);
                    nphi=SPLIT_NPHI, ndt=SPLIT_NDT, dt_max=SPLIT_DT_MAX) where {T,V}
     t1, t2 = check_trace_order(t1, t2) # t2 is now clockwise of t1
     n, e = Seis.rotate_through(t1, t2, -t1.sta.azi)
+    Seis.cut!.((n, e), window_start, window_end)
     phi = range(-90., stop=90., length=nphi)
     dt = range(dt_max/ndt, stop=dt_max, length=ndt)
     lam1, lam2 = zeros(T, nphi, ndt), zeros(T, nphi, ndt)
@@ -120,7 +124,8 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V};
     spol, dspol = sourcepol(n, e, phi[ip], dt[idt])
     # Errors in splitting parameters
     dphi, ddt = errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
-    Result(phi, dt, lam1, lam2, phi_best, dphi, dt_best, ddt, spol, dspol, t1, t2)
+    Result(phi, dt, lam1, lam2, phi_best, dphi, dt_best, ddt, spol, dspol, t1, t2,
+           window_start, window_end)
 end
 
 """

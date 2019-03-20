@@ -12,27 +12,39 @@ RecipesBase.@recipe function f(s::Result)
     framestyle --> :box
     colorbar := false
     layout := (2,3)
+    title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\\lambda_2"]
     
     # Input traces in N-E orientation
     n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
 
-    ## Input traces in original orientation
-    title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\\lambda_2"]
+    ## Input traces in original orientation with analysis window highlighted
+    # Analysis window in colour behind traces
+    # RecipesBase.@series begin
+    #     subplot := 1
+    #     w1, w2 =s.window_start, s.window_end
+    #     []
+    # end
+    # Traces
     RecipesBase.@series begin
         subplot := 1
         label := [s.trace1.sta.cha s.trace2.sta.cha]
         Seis.times(s.trace1), [Seis.trace(s.trace1) Seis.trace(s.trace2)]
     end
+    # Window limits
+    RecipesBase.@series begin
+        subplot := 1
+        seriestype := :vline
+        label := ""
+        linecolor := :red
+        linewidth := 1
+        [s.window_start, s.window_end]
+    end
     
-    # RecipesBase.@series begin
-    #     subplot := 2
-    #     [s.trace2]
-    # end
-    #
     ## Rotated to spol
     RecipesBase.@series begin
         subplot := 2
-        spol, spol_90 = Seis.rotate_through(n_orig, e_orig, 180-s.spol)
+        spol, spol_90 = Seis.cut.(Seis.rotate_through(n_orig, e_orig, 180-s.spol),
+                                 s.window_start, s.window_end)
         label := ""
         linecolor := [:blue :red]
         Seis.times(spol), [Seis.trace(spol), Seis.trace(spol_90)]
@@ -44,7 +56,8 @@ RecipesBase.@recipe function f(s::Result)
         label := ""
         linecolor := [:blue :red]
         n, e = deepcopy.((n_orig, e_orig))
-        SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
+        SeisSplit.apply_split!(Seis.cut!.((n, e), s.window_start, s.window_end)...,
+                               s.phi_best, -s.dt_best)
         fast, slow = Seis.rotate_through(n, e, 180-s.spol)
         Seis.times(fast), [Seis.trace(fast), Seis.trace(slow)]
     end
@@ -58,7 +71,8 @@ RecipesBase.@recipe function f(s::Result)
         linecolor --> :black
         xlim := (-amax, amax)
         ylim := (-amax, amax)
-        Seis.trace(e_orig), Seis.trace(n_orig)
+        Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
+            Seis.trace(Seis.cut(n_orig, s.window_start, s.window_end))
     end
 
     ## Particle motion after correction
@@ -71,6 +85,7 @@ RecipesBase.@recipe function f(s::Result)
         ylim := (-amax, amax)
         n, e = deepcopy.((n_orig, e_orig))
         SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
+        Seis.cut!.((n, e), s.window_start, s.window_end)
         Seis.trace(e), Seis.trace(n)
     end
 
