@@ -60,13 +60,34 @@ const SPLIT_NPHI = 181
 const SPLIT_DT_MAX = 4.
 
 """
+Struct containing the results of shear wave splitting analysis.  See `splitting` for details
+of the fields contained.
+"""
+struct Result{T,V}
+    phi
+    dt
+    lam1
+    lam2
+    phi_best
+    dphi
+    dt_best
+    ddt
+    spol
+    dspol
+    "Windowed input trace 1"
+    trace1::Seis.Trace{T,V}
+    "Windowed input trace 2"
+    trace2::Seis.Trace{T,V}
+end
+
+"""
     splitting(t1, t2; nphi=$SPLIT_NPHI, ndt=$SPLIT_NDT, dt_max=$SPLIT_DT_MAX) -> results
 
 Perform a search over a pair of Seis traces, `t1` and `t2`, for the smallest value of the
 minimum eigenvalue of the covariance matrix between the traces, for a set of `nphi`×`ndt`
 shear wave splitting operators, up to `dt_max` s.
 
-`results` is a named tuple containing:
+`results` is a `SeisSplit.Result` containing:
 
 - `phi`: The set of fast shear wave orientations in °
 - `dt`: The set of delays times in s
@@ -97,9 +118,7 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V};
     spol, dspol = sourcepol(n, e, phi[ip], dt[idt])
     # Errors in splitting parameters
     dphi, ddt = errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
-    # Return minimum values as well
-    (phi=phi, dt=dt, lam1=lam1, lam2=lam2,
-        phi_best=phi_best, dphi=dphi, dt_best=dt_best, ddt=ddt, spol=spol, dspol=dspol)
+    Result(phi, dt, lam1, lam2, phi_best, dphi, dt_best, ddt, spol, dspol, t1, t2)
 end
 
 """

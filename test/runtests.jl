@@ -7,8 +7,9 @@ Random.seed!(Dates.second(Dates.now()))
 
 "Test that all fields are approximately equal for two named tuples"
 function splits_are_equal(s, s′)
-    for k in keys(s)
-        @test s[k] ≈ s′[k]
+    for f in fieldnames(SeisSplit.Result)
+        f in (:trace1, :trace2) && continue # Don't compare traces themselves
+        @test getfield(s, f) ≈ getfield(s′, f)
     end
 end
 

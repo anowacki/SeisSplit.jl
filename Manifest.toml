@@ -71,9 +71,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
 deps = ["Distributed", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "c24e9b6500c037673f0241a2783472b8c3d080c7"
+git-tree-sha1 = "dec0ebacfbc3a2126c614ab5e903c9ef063688d0"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.16.4"
+version = "0.17.0"
 
 [[FFTW]]
 deps = ["AbstractFFTs", "BinaryProvider", "Compat", "Conda", "Libdl", "LinearAlgebra", "Reexport", "Test"]
@@ -207,11 +207,11 @@ uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
 [[Seis]]
 deps = ["DSP", "Dates", "Geodesics", "Glob", "LinearAlgebra", "MacroTools", "RecipesBase", "SAC", "Statistics"]
-git-tree-sha1 = "5b32987ca5b76dba431e931d6d48018daeeab402"
+git-tree-sha1 = "51f7de065307a5870196c76a29e6a43c156a05e7"
 repo-rev = "master"
 repo-url = "https://github.com/anowacki/Seis.jl"
 uuid = "dd80f4d8-c2f6-58bd-9bd3-4635f134261d"
-version = "0.1.2"
+version = "0.1.6"
 
 [[Serialization]]
 uuid = "9e88b42a-f829-5b0c-bbe9-9e923198166b"
