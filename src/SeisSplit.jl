@@ -319,6 +319,7 @@ function degrees_of_freedom(f)
     # Compute amplitude spectrum
     F = abs.(FFTW.rfft(f))
     E₂ = sum(x->x^2, F)
+    E₂ -= (F[1]^2 + F[end]^2)/2
     E₄ = 1/3*(F[1]^4 + F[end]^4)
     for i in 2:(length(F)-1)
         E₄ += 4/3*F[i]^4
