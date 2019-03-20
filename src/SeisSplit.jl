@@ -39,7 +39,7 @@ See the docstring for `splitting` for more information.
   doi:[10.1029/91JB00899](https://doi.org/10.1029/91JB00899)
 - Walsh, E., Arnold, R., Savage, M.K., 2013. Silver and Chan revisited.
   Journal of Geophysical Research: Solid Earth 118, 5500–5515.
-  doi[10.1002/jgrb.50386](https://doi.org/10.1002/jgrb.50386)
+  doi:[10.1002/jgrb.50386](https://doi.org/10.1002/jgrb.50386)
 """
 module SeisSplit
 
