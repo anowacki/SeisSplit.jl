@@ -31,36 +31,33 @@ julia> n, e = Seis.read_sac.(joinpath(dirname(pathof(SeisSplit)), "..", "test", 
 (Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999))
 
 julia> s = splitting(n, e)
-(phi = -90.0:1.0:90.0, dt = 0.1:0.1:4.0, lam1 = Float32[70.6024 71.7245 … 64.1079 64.2652; 70.5508 71.6332 … 64.6298 64.767; … ; 70.6525 71.813 … 63.5645 63.7426; 70.6024 71.7245 … 64.1079 64.2652], lam2 = Float32[7.24323 6.61557 … 10.8254 10.7367; 7.27189 6.66642 … 10.5352 10.4576; … ; 7.21534 6.56629 … 11.1276 11.0273; 7.24323 6.61557 … 10.8254 10.7367], phi_best = 40.0, dphi = 4.25, dt_best = 1.4, ddt = 0.1, spol = 10.013461f0, dspol = 1.1384997f0)
+SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.1:0.1:4.0, Float32[70.6024 71.7245 … 64.1079 64.2652; 70.5508 71.6332 … 64.6298 64.767; … ; 70.6525 71.813 … 63.5645 63.7426; 70.6024 71.7245 … 64.1079 64.2652], Float32[7.9576 7.26804 … 11.893 11.7956; 7.98909 7.3239 … 11.5743 11.4889; … ; 7.92696 7.21389 … 12.2251 12.1149; 7.9576 7.26804 … 11.893 11.7956], 40.0, 0.5, 1.4, 0.0, 10.013461f0, 1.1384997f0, Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999), 0.0f0, 99.9f0)
 
 ```
 
 The following is the docstring for the `splitting` function:
 
 ```
+    splitting(t1, t2, window_start=starttime(t1), window_end=endtime(t1); nphi=181, ndt=40, dt_max=4.0) -> results
 
-    splitting(t1, t2; nphi=181, ndt=40, dt_max=4.0) -> results
-
-Perform a search over a pair of Seis traces, `t1` and `t2`, for the smallest value of the
+Perform a search over a pair of `Seis` traces, `t1` and `t2`, for the smallest value of the
 minimum eigenvalue of the covariance matrix between the traces, for a set of `nphi`×`ndt`
 shear wave splitting operators, up to `dt_max` s.
 
-`results` is a named tuple containing:
+`results` is a `SeisSplit.Result` containing:
 
-  •    `phi`: The set of fast shear wave orientations in °
-
-  •    `dt`: The set of delays times in s
-
-  •    `lam1`: The larger eigenvalues at each [phi,dt] point
-
-  •    `lam2`: The smaller eigenvalues at each point
-
-  •    `phi_best` and `dphi`: The best ϕ and the 1-sigma error therein
-
-  •    `dt_best` and `ddt`: The best δt and the 1-sigma error therein
-
-  •    `spol` and `dspol`: The source polarisation and an estimate of its uncertainty
-      for the best-fitting ϕ and δt
+- `phi`: The set of fast shear wave orientations in °
+- `dt`: The set of delays times in s
+- `lam1`: The larger eigenvalues at each [phi,dt] point
+- `lam2`: The smaller eigenvalues at each point
+- `phi_best` and `dphi`: The best ϕ and its 1σ uncertainty. ϕ is measured
+    clockwise from local north (towards east) in °.
+- `dt_best` and `ddt`: The best δt and its 1σ uncertainty, in s
+- `spol` and `dspol`: The source polarisation and an estimate of its uncertainty
+    for the best-fitting ϕ and δt. `spol` is given in ° clockwise of local north.
+- `trace1` and `trace2`, the original input traces, where `trace2` is clockwise of
+    `trace1`
+-  `window_start`, `window_end`, the analysis time window end points.
 
 ```
 
@@ -71,4 +68,4 @@ shear wave splitting operators, up to `dt_max` s.
   doi:[10.1029/91JB00899](https://doi.org/10.1029/91JB00899)
 - Walsh, E., Arnold, R., Savage, M.K., 2013. Silver and Chan revisited.
   Journal of Geophysical Research: Solid Earth 118, 5500–5515.
-  doi[10.1002/jgrb.50386](https://doi.org/10.1002/jgrb.50386)
+  doi:[10.1002/jgrb.50386](https://doi.org/10.1002/jgrb.50386)

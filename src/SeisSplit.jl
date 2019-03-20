@@ -11,8 +11,8 @@ is an in-development community seismic analysis package in Julia.
 
 ## Using
 
-The `splitting` function performs shear wave splitting analysis and returns a named
-tuple containing information about the analysis.  Provide two `Seis.Trace`s, and
+The `splitting` function performs shear wave splitting analysis and returns a
+`SeisSplit.Result` containing information about the analysis.  Provide two `Seis.Trace`s, and
 optionaly specify the maximum delay time and number of fast orientaton and delay
 time analysis points.
 
@@ -25,7 +25,7 @@ julia> n, e = Seis.read_sac.(joinpath(dirname(pathof(SeisSplit)), "..", "test", 
 (Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999))
 
 julia> s = splitting(n, e)
-(phi = -90.0:1.0:90.0, dt = 0.1:0.1:4.0, lam1 = Float32[70.6024 71.7245 … 64.1079 64.2652; 70.5508 71.6332 … 64.6298 64.767; … ; 70.6525 71.813 … 63.5645 63.7426; 70.6024 71.7245 … 64.1079 64.2652], lam2 = Float32[7.24323 6.61557 … 10.8254 10.7367; 7.27189 6.66642 … 10.5352 10.4576; … ; 7.21534 6.56629 … 11.1276 11.0273; 7.24323 6.61557 … 10.8254 10.7367], phi_best = 40.0, dphi = 4.25, dt_best = 1.4, ddt = 0.1, spol = 10.013461f0, dspol = 1.1384997f0)
+SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.1:0.1:4.0, Float32[70.6024 71.7245 … 64.1079 64.2652; 70.5508 71.6332 … 64.6298 64.767; … ; 70.6525 71.813 … 63.5645 63.7426; 70.6024 71.7245 … 64.1079 64.2652], Float32[7.9576 7.26804 … 11.893 11.7956; 7.98909 7.3239 … 11.5743 11.4889; … ; 7.92696 7.21389 … 12.2251 12.1149; 7.9576 7.26804 … 11.893 11.7956], 40.0, 0.5, 1.4, 0.0, 10.013461f0, 1.1384997f0, Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999), 0.0f0, 99.9f0)
 
 ```
 
@@ -83,13 +83,13 @@ struct Result{T,V}
     spol
     "Uncertainty in source polarisation"
     dspol
-    "Origianl input trace 1"
+    "Original input trace 1"
     trace1::Seis.Trace{T,V}
     "Original input trace 2"
     trace2::Seis.Trace{T,V}
     "Analysis window start time (s)"
     window_start
-    "Analysis windoe end time (s)"
+    "Analysis window end time (s)"
     window_end
 end
 
