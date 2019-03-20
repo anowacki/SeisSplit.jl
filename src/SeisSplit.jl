@@ -80,6 +80,8 @@ struct Result{T,V}
     trace2::Seis.Trace{T,V}
 end
 
+include("plots.jl")
+
 """
     splitting(t1, t2; nphi=$SPLIT_NPHI, ndt=$SPLIT_NDT, dt_max=$SPLIT_DT_MAX) -> results
 
