@@ -51,8 +51,6 @@ import Seis
 
 export splitting
 
-__init__() = @warn("Error estimates from splitting() are currently " *
-                   "too large and therefore unreliable")
 
 "Default number of δt points to search over"
 const SPLIT_NDT = 40
@@ -292,10 +290,10 @@ function errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
     copy_trace!(N, n)
     copy_trace!(E, e)
     # Rotate to fast-slow and remove splitting
-    rotate_traces!(N, E, phi_best)
-    shift_trace!(N, -dt_best)
+    rotate_traces!(N, E, -phi_best)
+    shift_trace!(N, dt_best)
     # Rotate to polarisation direction.  E should be ~ 0 and thus represent noise
-    rotate_traces!(N, E, -phi_best + spol)
+    rotate_traces!(N, E, phi_best - spol)
     ν = degrees_of_freedom(E.t)
     # Critical F-statistic at 95% F(k, ν-2) where k = 2
     Fν = Distributions.quantile(Distributions.FDist(2, ν - 2), 0.95)
@@ -323,10 +321,9 @@ function degrees_of_freedom(f)
     E₂ = sum(x->x^2, F)
     E₄ = 1/3*(F[1]^4 + F[end]^4)
     for i in 2:(length(F)-1)
-        E₄ += F[i]^4
+        E₄ += 4/3*F[i]^4
     end
-    E₄ *= 4/3
-    ndf = round(Int, 4E₂^2/E₄ - 1)
+    ndf = round(Int, 4E₂^2/E₄ - 2)
 end
 
 """
