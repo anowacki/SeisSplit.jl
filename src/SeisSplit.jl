@@ -54,31 +54,44 @@ export splitting
 __init__() = @warn("Error estimates from splitting() are currently " *
                    "too large and therefore unreliable")
 
-# Module defaults
+"Default number of δt points to search over"
 const SPLIT_NDT = 40
+"Default number of ϕ points to search over"
 const SPLIT_NPHI = 181
-const SPLIT_DT_MAX = 4.
+"Default maximum δt (s)"
+const SPLIT_DT_MAX = 4.0
 
 """
-Struct containing the results of shear wave splitting analysis.  See `splitting` for details
-of the fields contained.
+Struct containing the results of shear wave splitting analysis.
 """
 struct Result{T,V}
+    "Range of values of ϕ over which we searched (° clockwise from north)"
     phi
+    "Values of δt searched (s)"
     dt
+    "Larger eigenvalue at each point in (ϕ,δt) space (normalised)"
     lam1
+    "Smaller eigenvalue"
     lam2
+    "Optimal fast orientation ϕ (° clockwise from north)"
     phi_best
+    "Uncertainty in optimal ϕ (°)"
     dphi
+    "Optimal δt (s)"
     dt_best
+    "Uncertainty in optimal δt (s)"
     ddt
+    "Source polarisation for optimal splitting (° clockwise from north)"
     spol
+    "Uncertainty in source polarisation"
     dspol
-    "Windowed input trace 1"
+    "Origianl input trace 1"
     trace1::Seis.Trace{T,V}
-    "Windowed input trace 2"
+    "Original input trace 2"
     trace2::Seis.Trace{T,V}
+    "Analysis window start time (s)"
     window_start
+    "Analysis windoe end time (s)"
     window_end
 end
 
@@ -102,6 +115,8 @@ shear wave splitting operators, up to `dt_max` s.
 - `dt_best` and `ddt`: The best δt and its 1σ uncertainty, in s
 - `spol` and `dspol`: The source polarisation and an estimate of its uncertainty for the
   best-fitting ϕ and δt.  `spol` is given in ° clockwise of local north.
+- `trace1` and `trace2`, the original input traces, where `trace2` is clockwise of `trace1`
+- `window_start`, `window_end`, the analysis time window end points.
 """
 function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
                    window_start=Seis.starttime(t1), window_end=Seis.endtime(t1);
@@ -136,7 +151,7 @@ Return the traces `t1` and `t2` as `a` and `b`, where `b` is always clockwise of
 check_trace_order(t1, t2) = Seis.angle_difference(t1.sta.azi, t2.sta.azi) > 0 ? (t1, t2) : (t2, t1)
 
 """
-    apply_splitQ(n, e, phi, dt)
+    apply_split!(n, e, phi, dt)
 
 Apply a splitting operator to two traces.  `n` is assumed to be oriented north,
 and `e` east.
