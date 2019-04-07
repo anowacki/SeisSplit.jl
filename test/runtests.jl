@@ -54,7 +54,6 @@ end
         end
     end
     @testset "Errors" begin
-        # TODO: Fix uncertainties and remove _broken when done.
         let t = read_test_data()
             e, n = t
             s = splitting(e, n, e.meta.SAC_user0, e.meta.SAC_user2)

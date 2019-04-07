@@ -123,11 +123,20 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
     n, e = Seis.rotate_through(t1, t2, -t1.sta.azi)
     Seis.cut!.((n, e), window_start, window_end)
     phi = range(-90., stop=90., length=nphi)
-    dt = range(dt_max/ndt, stop=dt_max, length=ndt)
+    dt = range(0.0, stop=dt_max, length=ndt)
     lam1, lam2 = zeros(T, nphi, ndt), zeros(T, nphi, ndt)
     N, E = deepcopy(n), deepcopy(e)
-    @inbounds for j in eachindex(dt), i in eachindex(phi)
-        lam1[i,j], lam2[i,j] = compute_eigvals(n, e, phi[i], dt[j], N, E)
+    @inbounds for j in eachindex(dt)
+        # Only need to compute zero-δt once
+        if j == firstindex(dt)
+            lam1₀, lam2₀ = compute_eigvals(n, e, zero(first(phi)), dt[j], N, E)
+            lam1[:,j] .= lam1₀
+            lam2[:,j] .= lam2₀
+            continue
+        end
+        for i in eachindex(phi)
+            lam1[i,j], lam2[i,j] = compute_eigvals(n, e, phi[i], dt[j], N, E)
+        end
     end
     # Best parameters
     ip, idt = minloc2(lam2)
