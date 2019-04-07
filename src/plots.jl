@@ -12,9 +12,9 @@ RecipesBase.@recipe function f(s::Result)
     framestyle --> :box
     colorbar := false
     layout := (2,3)
-    title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\\lambda_2"]
+    title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\$\\lambda_2\$"]
     titlefontsize --> 11
-    
+
     # Input traces in N-E orientation
     n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
 
@@ -64,7 +64,7 @@ RecipesBase.@recipe function f(s::Result)
     end
 
     ## Particle motion before correction
-    amax = 1.4*maximum(x -> sqrt(x[1]^2 + x[1]^2), zip(Seis.trace(e_orig), Seis.trace(n_orig)))
+    amax = 1.2*maximum(x -> sqrt(x[1]^2 + x[2]^2), zip(Seis.trace(e_orig), Seis.trace(n_orig)))
     RecipesBase.@series begin
         subplot := 4
         aspect_ratio := :equal
@@ -126,11 +126,11 @@ RecipesBase.@recipe function f(s::Result)
     # Best value
     RecipesBase.@series begin
         subplot := 6
-        xlabel --> "\\delta t / s"
-        ylabel --> "\\phi / °"
+        seriestype := :scatter
+        xlabel --> "\$\\delta \\mathrm{t} \\, / \\, \\mathrm{s}\$"
+        ylabel --> "\$\\phi \\, / \\, ^\\circ\$"
         xlim := extrema(s.dt)
         ylim := extrema(s.phi)
-        seriestype := :scatter
         label := ""
         [s.dt_best], [s.phi_best]
     end
