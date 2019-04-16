@@ -17,21 +17,21 @@ julia> ] # Press ']' to get to package mode
 
 ## Using
 
-The `splitting` function performs shear wave splitting analysis and returns a named
-tuple containing information about the analysis.  Provide two `Seis.Trace`s, and
-optionaly specify the maximum delay time and number of fast orientaton and delay
+The `splitting` function performs shear wave splitting analysis and returns a `SeisSplit.Result`
+type containing information about the analysis.  Provide two `Seis.Trace`s, and
+optionally specify the maximum delay time and number of fast orientation and delay
 time analysis points.
 
 Example:
 
-```julia
+```julia-repl
 julia> using Seis, SeisSplit
 
 julia> n, e = Seis.read_sac.(joinpath(dirname(pathof(SeisSplit)), "..", "test", "data", "wave.BH").*("N", "E"))
 (Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999))
 
 julia> s = splitting(n, e)
-SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.1:0.1:4.0, Float32[70.6024 71.7245 … 64.1079 64.2652; 70.5508 71.6332 … 64.6298 64.767; … ; 70.6525 71.813 … 63.5645 63.7426; 70.6024 71.7245 … 64.1079 64.2652], Float32[7.9576 7.26804 … 11.893 11.7956; 7.98909 7.3239 … 11.5743 11.4889; … ; 7.92696 7.21389 … 12.2251 12.1149; 7.9576 7.26804 … 11.893 11.7956], 40.0, 0.5, 1.4, 0.0, 10.013461f0, 1.1384997f0, Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999), 0.0f0, 99.9f0)
+SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.0:0.10256410256410256:4.0, Float32[69.407 70.6024 … 64.1079 64.2652; 69.407 70.5508 … 64.6298 64.767; … ; 69.407 70.6525 … 63.5645 63.7426; 69.407 70.6024 … 64.1079 64.2652], Float32[8.79587 8.05464 … 12.038 11.9395; 8.79587 8.08652 … 11.7154 11.6291; … ; 8.79587 8.02363 … 12.3742 12.2627; 8.79587 8.05464 … 12.038 11.9395], 41.0, 0.5, 1.3333333333333333, 0.0, 10.455532f0, 1.1246407f0, Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999), 0.0f0, 99.9f0)
 
 ```
 
@@ -60,6 +60,20 @@ shear wave splitting operators, up to `dt_max` s.
 -  `window_start`, `window_end`, the analysis time window end points.
 
 ```
+
+### Plotting results
+
+You can create a diagnostic plot of a `SeisSplit.Result` by loading
+[`Plots.jl`](https://github.com/JuliaPlots/Plots.jl) and calling `plot()` on the result:
+
+```julia-repl
+julia> using Plots
+
+julia> plot(s)
+```
+
+![Example of a SeisSplit diagnostic plot](docs/images/diagnostic_plot_example.svg)
+
 
 ## References
 
