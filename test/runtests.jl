@@ -60,6 +60,17 @@ end
             @test s.dphi ≈ 0.75 atol=0.5
             @test s.ddt ≈ 0.013 atol=0.1
             @test s.dspol ≈ 0.35 atol=0.5
+            @test s.ndf ≈ 462 atol=2
+        end
+    end
+    @testset "QC" begin
+        let t = read_test_data()
+            e, n = t
+            s = splitting(e, n, e.meta.SAC_user0, e.meta.SAC_user2)
+            @test snr_restivo_helffrich(s) ≈ 19.695 atol=2
+            s′ = splitting(Seis.rotate_through(n, e, rand(1:360))...,
+                           e.meta.SAC_user0, e.meta.SAC_user2)
+            @test snr_restivo_helffrich(s) ≈ snr_restivo_helffrich(s′)
         end
     end
 end

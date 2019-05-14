@@ -43,17 +43,24 @@ See the docstring for `splitting` for more information.
 """
 module SeisSplit
 
+import DelimitedFiles, Printf, Statistics
+
 import Distributions, FFTW
 using LinearAlgebra
 using StaticArrays
 
 import Seis
 
-export splitting
+export
+    lam_ratio,
+    lam1_ratio,
+    lam2_ratio,
+    snr_restivo_helffrich,
+    splitting
 
 
 "Default number of δt points to search over"
-const SPLIT_NDT = 40
+const SPLIT_NDT = 41
 "Default number of ϕ points to search over"
 const SPLIT_NPHI = 181
 "Default maximum δt (s)"
@@ -91,9 +98,12 @@ struct Result{T,V}
     window_start
     "Analysis window end time (s)"
     window_end
+    "Degrees of freedom"
+    ndf
 end
 
 include("plots.jl")
+include("qc.jl")
 
 """
     splitting(t1, t2, window_start=starttime(t1), window_end=endtime(t1); nphi=$SPLIT_NPHI, ndt=$SPLIT_NDT, dt_max=$SPLIT_DT_MAX) -> results
@@ -145,9 +155,9 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
     # Find source polarisation and error therein
     spol, dspol = sourcepol(n, e, phi[ip], dt[idt])
     # Errors in splitting parameters
-    dphi, ddt = errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
+    dphi, ddt, ν = errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
     Result(phi, dt, lam1, lam2, phi_best, dphi, dt_best, ddt, spol, dspol, t1, t2,
-           window_start, window_end)
+           window_start, window_end, ν)
 end
 
 """
@@ -286,9 +296,10 @@ function covar(t1::Seis.Trace{T,V,S}, t2::Seis.Trace{T,V,S}) where {T,V,S}
 end
 
 """
-    errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt) -> σϕ, σδt
+    errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt) -> σϕ, σδt, ν
 
-Return the 1σ errors in ϕ and δt, `σϕ` and `σδt`, for the best-fitting splitting parameters
+Return the 1σ errors in ϕ and δt, `σϕ` and `σδt` plus the number of degrees of freedom
+`ν`, for the best-fitting splitting parameters
 `phi_best` and `dt_best`, and scale the λ₂ surface, `lam2`, such that the 95% confidence contour
 has a value of 1.  `spol` is the retrieved source polarisation.
 `n` and `e` are the north and east input traces, and `N` and `E` are
@@ -317,6 +328,7 @@ function errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
     lam2 .= lam2./(1 + 2Fν/(ν - 2))./λ₂_min
     # Get errors by scanning the error surface
     σ_ϕ, σ_δt = errors_from_normalised_lam2(lam2, phi, dt)
+    σ_ϕ, σ_δt, ν
 end
 
 """
@@ -346,9 +358,9 @@ function errors_from_normalised_lam2(lam2, phi, dt)
     I = findall(x->x<=1, lam2)
     idt1 = minimum(x->x[2], I)
     idt2 = maximum(x->x[2], I)
-    σ_δt = (idt2 - idt1)*step(dt)/4
+    σ_δt = max((idt2 - idt1)*step(dt)/4, step(dt)/4)
     nphi = length(unique(getindex.(I, 1)))
-    σ_ϕ = nphi*step(phi)/4
+    σ_ϕ = max(nphi*step(phi)/4, step(phi)/4)
     σ_ϕ, σ_δt
 end
 
