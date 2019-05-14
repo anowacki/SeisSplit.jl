@@ -101,7 +101,8 @@ RecipesBase.@recipe function f(s::Result)
         seriestype := :contour
         levels := 10:10:100
         linewidth := 1
-        linecolor := :black
+        linecolor := :gray
+        linealpha := 0.6
         s.dt, s.phi, s.lam2
     end
 
