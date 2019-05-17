@@ -11,8 +11,10 @@ RecipesBase.@recipe function f(s::Result)
     grid --> false
     framestyle --> :box
     colorbar := false
-    layout := (2,3)
-    title := ["Input" "Source pol. pre-corr" "Source pol. post-corr" "PM pre-corr" "PM post-corr" "\$\\lambda_2\$"]
+    layout := 8
+    title := hcat("Input", "Source pol. pre-corr", "Source pol. post-corr",
+                  "Fast-slow pre-corr", "Fast-slow corr", "\$\\lambda_2\$",
+                  "PM pre-corr", "PM post-corr", "")
     titlefontsize --> 11
 
     # Input traces in N-E orientation
@@ -63,35 +65,25 @@ RecipesBase.@recipe function f(s::Result)
         Seis.times(fast), [Seis.trace(fast), Seis.trace(slow)]
     end
 
-    ## Particle motion before correction
-    amax = 1.2*maximum(x -> sqrt(x[1]^2 + x[2]^2), zip(Seis.trace(e_orig), Seis.trace(n_orig)))
+    ## Fast and slow before dt shift
+    sfast, sslow = Seis.cut.(Seis.rotate_through(n_orig, e_orig, s.phi_best),
+                             s.window_start, s.window_end)
     RecipesBase.@series begin
         subplot := 4
-        aspect_ratio := :equal
         label := ""
-        linecolor --> :black
-        xlabel := "East"
-        ylabel := "North"
-        xlim := (-amax, amax)
-        ylim := (-amax, amax)
-        Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
-            Seis.trace(Seis.cut(n_orig, s.window_start, s.window_end))
+        legend := false
+        linecolor := [:blue :red]
+        Seis.times(sfast), [Seis.trace(sfast), Seis.trace(sslow)]
     end
-
-    ## Particle motion after correction
+    
+    ## Fast and slow after dt shift
     RecipesBase.@series begin
         subplot := 5
-        aspect_ratio := :equal
-        label := ""
-        linecolor --> :black
-        xlabel := "East"
-        ylabel := "North"
-        xlim := (-amax, amax)
-        ylim := (-amax, amax)
-        n, e = deepcopy.((n_orig, e_orig))
-        SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
-        Seis.cut!.((n, e), s.window_start, s.window_end)
-        Seis.trace(e), Seis.trace(n)
+        legend := false
+        linecolor := [:blue :red]
+        xlim := (s.window_start, s.window_end)
+        # Fake the shift by changing sample times
+        [Seis.times(sfast), Seis.times(sslow) .+ s.dt_best], [Seis.trace(sfast), Seis.trace(sslow)]
     end
 
     ## λ₂ surface
@@ -135,4 +127,46 @@ RecipesBase.@recipe function f(s::Result)
         label := ""
         [s.dt_best], [s.phi_best]
     end
+
+    ## Particle motion before correction
+    amax = 1.2*maximum(x -> sqrt(x[1]^2 + x[2]^2), zip(Seis.trace(e_orig), Seis.trace(n_orig)))
+    RecipesBase.@series begin
+        subplot := 7
+        aspect_ratio := :equal
+        label := ""
+        linecolor --> :black
+        xlabel := "East"
+        ylabel := "North"
+        xticks --> nothing
+        yticks --> nothing
+        xlim := (-amax, amax)
+        ylim := (-amax, amax)
+        Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
+            Seis.trace(Seis.cut(n_orig, s.window_start, s.window_end))
+    end
+
+    ## Particle motion after correction
+    RecipesBase.@series begin
+        subplot := 8
+        aspect_ratio := :equal
+        label := ""
+        linecolor --> :black
+        xlabel := "East"
+        ylabel := "North"
+        xticks --> nothing
+        yticks --> nothing
+        xlim := (-amax, amax)
+        ylim := (-amax, amax)
+        n, e = deepcopy.((n_orig, e_orig))
+        SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
+        Seis.cut!.((n, e), s.window_start, s.window_end)
+        Seis.trace(e), Seis.trace(n)
+    end
+
+    ## Empty plot at bottom right
+    # RecipesBase.@series begin
+    #     subplot := 9
+    #     framestyle := :empty
+    #     nothing
+    # end
 end
