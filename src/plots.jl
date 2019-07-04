@@ -42,7 +42,7 @@ RecipesBase.@recipe function f(s::Result)
         linewidth := 1
         [s.window_start, s.window_end]
     end
-    
+
     ## Rotated to spol
     RecipesBase.@series begin
         subplot := 2
@@ -52,7 +52,7 @@ RecipesBase.@recipe function f(s::Result)
         linecolor := [:blue :red]
         Seis.times(spol), [Seis.trace(spol), Seis.trace(spol_90)]
     end
-    
+
     ## Corrected and rotated to spol
     RecipesBase.@series begin
         subplot := 3
@@ -75,7 +75,7 @@ RecipesBase.@recipe function f(s::Result)
         linecolor := [:blue :red]
         Seis.times(sfast), [Seis.trace(sfast), Seis.trace(sslow)]
     end
-    
+
     ## Fast and slow after dt shift
     RecipesBase.@series begin
         subplot := 5
@@ -83,7 +83,7 @@ RecipesBase.@recipe function f(s::Result)
         linecolor := [:blue :red]
         xlim := (s.window_start, s.window_end)
         # Fake the shift by changing sample times
-        [Seis.times(sfast), Seis.times(sslow) .+ s.dt_best], [Seis.trace(sfast), Seis.trace(sslow)]
+        [Seis.times(sfast), Seis.times(sslow) .- s.dt_best], [Seis.trace(sfast), Seis.trace(sslow)]
     end
 
     ## λ₂ surface

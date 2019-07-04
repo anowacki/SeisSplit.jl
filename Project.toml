@@ -1,9 +1,10 @@
 name = "SeisSplit"
 uuid = "f05a75a8-0205-5d86-a1c6-ce5881d793bb"
 authors = ["Andy Nowacki <a.nowacki@leeds.ac.uk>"]
-version = "0.4.0"
+version = "0.5.0"
 
 [deps]
+DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"

@@ -7,6 +7,11 @@ Walsh et al. (2013).
 It uses the [Seis.jl](https://github.com/anowacki/Seis.jl) package which
 is an in-development community seismic analysis package in Julia.
 
+Computation of splitting using the rotation-correlation method
+(e.g., Bowman & Ando, 1987) is also possible.  This is computed
+automatically by the main `splitting` function for quality control
+purposes.
+
 ## Installing
 
 ```julia
@@ -24,7 +29,7 @@ time analysis points.
 
 Example:
 
-```julia-repl
+```julia
 julia> using Seis, SeisSplit
 
 julia> n, e = Seis.read_sac.(joinpath(dirname(pathof(SeisSplit)), "..", "test", "data", "wave.BH").*("N", "E"))
@@ -38,11 +43,13 @@ SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.0:0.102564102564102
 The following is the docstring for the `splitting` function:
 
 ```
-    splitting(t1, t2, window_start=starttime(t1), window_end=endtime(t1); nphi=181, ndt=40, dt_max=4.0) -> results
+    splitting(t1, t2, window_start=starttime(t1), window_end=endtime(t1); nphi=181, ndt=41, dt_max=4, xcorr=true) -> results
 
-Perform a search over a pair of `Seis` traces, `t1` and `t2`, for the smallest value of the
+Perform a search over a pair of Seis traces, `t1` and `t2`, for the smallest value of the
 minimum eigenvalue of the covariance matrix between the traces, for a set of `nphi`×`ndt`
 shear wave splitting operators, up to `dt_max` s.
+
+ ## Output
 
 `results` is a `SeisSplit.Result` containing:
 
@@ -50,15 +57,24 @@ shear wave splitting operators, up to `dt_max` s.
 - `dt`: The set of delays times in s
 - `lam1`: The larger eigenvalues at each [phi,dt] point
 - `lam2`: The smaller eigenvalues at each point
-- `phi_best` and `dphi`: The best ϕ and its 1σ uncertainty. ϕ is measured
-    clockwise from local north (towards east) in °.
+- `phi_best` and `dphi`: The best ϕ and its 1σ uncertainty.  ϕ is measured
+  clockwise from local north (towards east) in °.
 - `dt_best` and `ddt`: The best δt and its 1σ uncertainty, in s
-- `spol` and `dspol`: The source polarisation and an estimate of its uncertainty
-    for the best-fitting ϕ and δt. `spol` is given in ° clockwise of local north.
-- `trace1` and `trace2`, the original input traces, where `trace2` is clockwise of
-    `trace1`
--  `window_start`, `window_end`, the analysis time window end points.
+- `spol` and `dspol`: The source polarisation and an estimate of its uncertainty for the
+  best-fitting ϕ and δt.  `spol` is given in ° clockwise of local north.
+- `trace1` and `trace2`, the original input traces, where `trace2` is clockwise of `trace1`
+- `window_start`, `window_end`, the analysis time window end points.
+- `ndf`, the number of degrees of freedom in the signal.
 
+If `xcorr` is `true`, then the rotation correlation map for the pair
+of traces is also computed and the following additional fields are
+present in `results`:
+
+- `xcorr_phi`: Angles over which rotation correlation was calculated (°)
+- `xcorr_dt`: Delay times over which rotation correlation was calculated (s)
+- `xcorr_map`: Cross correlation at each [phi,dt] point
+- `xcorr_phi_best`: Fast orientation of maximum cross correlation (°)
+- `xcorr_dt_best`: Delay time of maximum cross correlation (s)
 ```
 
 ### Plotting results
@@ -66,7 +82,7 @@ shear wave splitting operators, up to `dt_max` s.
 You can create a diagnostic plot of a `SeisSplit.Result` by loading
 [`Plots.jl`](https://github.com/JuliaPlots/Plots.jl) and calling `plot()` on the result:
 
-```julia-repl
+```julia
 julia> using Plots
 
 julia> plot(s)
@@ -77,6 +93,10 @@ julia> plot(s)
 
 ## References
 
+- Bowman, J. R., Ando, M., 1987. Shear-wave splitting in the
+  upper-mantle wedge above the Tonga subduction zone.  Geophys J R
+  Astr Soc 88, 25–41.
+  doi:[10.1111/j.1365-246X.1987.tb01367.x](https://doi.org/10.1111/j.1365-246X.1987.tb01367.x)
 - Silver, P.G., Chan, W.W., 1991. Shear-wave splitting and subcontinental mantle
   deformation. J Geophys Res-Sol Ea 96, 16429–16454.
   doi:[10.1029/91JB00899](https://doi.org/10.1029/91JB00899)
