@@ -156,6 +156,10 @@ function errors_scale_lam2!(lam2, N, E, n, e, phi_best, dt_best, spol, phi, dt)
     # Rotate to polarisation direction.  E should be ~ 0 and thus represent noise
     rotate_traces!(N, E, phi_best - spol)
     ν = degrees_of_freedom(E.t)
+    if ν <= 2
+        @warn("Degrees of freedom ≤ 2; resetting to 3.  σ may be inaccurate.")
+        ν = 3
+    end
     # Critical F-statistic at 95% F(k, ν-2) where k = 2
     Fν = Distributions.quantile(Distributions.FDist(2, ν - 2), 0.95)
     # Scale λ₂
