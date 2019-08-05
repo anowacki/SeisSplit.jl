@@ -1,3 +1,28 @@
+"Maximum string length of the field names of `Result`"
+const MAX_FIELD_NAME_LENGTH = maximum(x->length(String(x)), fieldnames(Result))
+
+function Base.show(io::IO, ::MIME"text/plain", s::Result{T,V}) where {T,V}
+    println("SeisSplit.Result{$T,$V}:")
+    maxlen = MAX_FIELD_NAME_LENGTH
+    for f in fieldnames(Result)
+        unit = f in (:phi_best, :dphi, :spol, :dspol, :xcorr_phi_best) ? " °" :
+               f in (:dt_best, :ddt, :xcorr_dt_best, :window_start, :window_end) ? " s" : ""
+        if f in (:trace1, :trace2)
+            t = getfield(s, f)
+            out = "Seis.Trace($(Seis.channel_code(t)): " *
+                "delta=$(t.delta), b=$(t.b), nsamples=$(Seis.nsamples(t)))"
+            println(lpad(String(f), maxlen), ": ", out)
+        elseif f in (:lam1, :lam2, :xcorr_dt, :xcorr_phi, :xcorr_map)
+            λ = getfield(s, f)
+            siz = join(size(λ), "×")
+            println(lpad(String(f), maxlen), ": ", siz,
+                " Array{$(eltype(λ)),$(ndims(λ))}: [", λ[1], ", ..., ", λ[2], "]")
+        else
+            println(lpad(String(f), maxlen), ": ", getfield(s, f), unit)
+        end
+    end
+end
+
 """
     write_fasst_result_file(file, s::Result; header=trye)
 
