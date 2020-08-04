@@ -5,7 +5,7 @@ minimum eigenvalue method of Silver & Chan (1991), as modified by
 Walsh et al. (2013).
 
 It uses the [Seis.jl](https://github.com/anowacki/Seis.jl) package which
-is an in-development community seismic analysis package in Julia.
+provides fast, flexible seismic analysis.
 
 Computation of splitting using the rotation-correlation method
 (e.g., Bowman & Ando, 1987) is also possible.  This is computed
@@ -17,7 +17,7 @@ purposes.
 ```julia
 julia> ] # Press ']' to get to package mode
 
-(v1.1)> add https://github.com/anowacki/Geodesics.jl https://github.com/anowacki/SAC.jl https://github.com/anowacki/Seis.jl https://github.com/anowacki/SeisSplit.jl
+(@v1.5) pkg> add https://github.com/anowacki/Geodesics.jl https://github.com/anowacki/Seis.jl https://github.com/anowacki/SeisSplit.jl
 ```
 
 ## Using
@@ -27,17 +27,41 @@ type containing information about the analysis.  Provide two `Seis.Trace`s, and
 optionally specify the maximum delay time and number of fast orientation and delay
 time analysis points.
 
-Example:
+We can show an example of using SeisSplit on some synthetic test data,
+where the signal has had splitting of 1.4 s applied with a fast shear
+wave orientation of 40°.  Looking at the result `s`, the values of `s.phi_best`
+and `s.dt_best` show have recovered the expected splitting parameters:
 
 ```julia
 julia> using Seis, SeisSplit
 
-julia> n, e = Seis.read_sac.(joinpath(dirname(pathof(SeisSplit)), "..", "test", "data", "wave.BH").*("N", "E"))
+julia> data_dir = joinpath(dirname(pathof(SeisSplit)), "..", "test", "data");
+
+julia> n, e = Seis.read_sac.(joinpath(data_dir, "wave.BH") .* ("N", "E"))
 (Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999))
 
-julia> s = splitting(n, e)
-SeisSplit.Result{Float32,Array{Float32,1}}(-90.0:1.0:90.0, 0.0:0.10256410256410256:4.0, Float32[69.407 70.6024 … 64.1079 64.2652; 69.407 70.5508 … 64.6298 64.767; … ; 69.407 70.6525 … 63.5645 63.7426; 69.407 70.6024 … 64.1079 64.2652], Float32[8.79587 8.05464 … 12.038 11.9395; 8.79587 8.08652 … 11.7154 11.6291; … ; 8.79587 8.02363 … 12.3742 12.2627; 8.79587 8.05464 … 12.038 11.9395], 41.0, 0.5, 1.3333333333333333, 0.0, 10.455532f0, 1.1246407f0, Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999), Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999), 0.0f0, 99.9f0)
-
+julia> s = splitting(n, e, 15, 35)
+SeisSplit.Result{Float32,Array{Float32,1}}:
+           phi: -90.0:1.0:90.0
+            dt: 0.0:0.1:4.0
+          lam1: 181×41 Array{Float32,2}: [68.06532, ..., 68.06532]
+          lam2: 181×41 Array{Float32,2}: [40.643196, ..., 40.643196]
+      phi_best: 40.0 °
+          dphi: 0.5 °
+       dt_best: 1.4 s
+           ddt: 0.025 s
+          spol: 10.00806 °
+         dspol: 0.22093524 °
+        trace1: Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999)
+        trace2: Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999)
+  window_start: 15 s
+    window_end: 35 s
+           ndf: 302
+     xcorr_phi: 90 Array{Float64,1}: [-90.0, ..., -88.0]
+      xcorr_dt: 81 Array{Float32,1}: [0.0, ..., 0.05]
+     xcorr_map: 81×90 Array{Float32,2}: [0.48693663, ..., 0.5155819]
+xcorr_phi_best: 42.0 °
+ xcorr_dt_best: 1.35 s
 ```
 
 The following is the docstring for the `splitting` function:
@@ -89,6 +113,24 @@ julia> plot(s)
 ```
 
 ![Example of a SeisSplit diagnostic plot](docs/images/diagnostic_plot_example.svg)
+
+(Note that Plots.jl must be included in the current environment; if it
+is not, then simply do `import Pkg; Pkg.add("Plots")` first.)
+
+
+## Contributing
+
+To report a bug, please
+[open an issue](https://github.com/anowacki/SeisSplit.jl/issues/new) and
+provide as much detail as possible to reproduce the bug.  Ideally this
+should be in the form of some code representing a
+minimal non-working example ([MWE](https://stackoverflow.com/help/minimal-reproducible-example)), but all reports are welcome.  I will
+try and fix any bugs that are reported, but please note that this may
+not be very quickly, depending on my other commitments.
+
+Pull requests (especially if they implement bug fixes) are very welcome.
+Feature requests will be seriously considered.  Please make sure that
+new code comes with tests, and that all tests pass with your addition.
 
 
 ## References
