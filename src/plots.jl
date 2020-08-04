@@ -16,6 +16,7 @@ RecipesBase.@recipe function f(s::Result)
                   "Fast-slow pre-corr", "Fast-slow corr", "\$\\lambda_2\$",
                   "PM pre-corr", "PM post-corr", "")
     titlefontsize --> 11
+    legendfontsize --> 8
 
     # Input traces in N-E orientation
     n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
@@ -81,7 +82,7 @@ RecipesBase.@recipe function f(s::Result)
         subplot := 5
         legend := false
         linecolor := [:blue :red]
-        xlim := (s.window_start, s.window_end)
+        xlims := (s.window_start, s.window_end)
         # Fake the shift by changing sample times
         [Seis.times(sfast), Seis.times(sslow) .- s.dt_best], [Seis.trace(sfast), Seis.trace(sslow)]
     end
@@ -120,10 +121,10 @@ RecipesBase.@recipe function f(s::Result)
     RecipesBase.@series begin
         subplot := 6
         seriestype := :scatter
-        xlabel --> "\$\\delta \\mathrm{t} \\, / \\, \\mathrm{s}\$"
-        ylabel --> "\$\\phi \\, / \\, ^\\circ\$"
-        xlim := extrema(s.dt)
-        ylim := extrema(s.phi)
+        xguide --> "\$\\delta \\mathrm{t} \\, / \\, \\mathrm{s}\$"
+        yguide --> "\$\\phi \\, / \\, ^\\circ\$"
+        xlims := extrema(s.dt)
+        ylims := extrema(s.phi)
         label := ""
         [s.dt_best], [s.phi_best]
     end
@@ -135,12 +136,12 @@ RecipesBase.@recipe function f(s::Result)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
-        xlabel := "East"
-        ylabel := "North"
+        xguide := "East"
+        yguide := "North"
         xticks --> nothing
         yticks --> nothing
-        xlim := (-amax, amax)
-        ylim := (-amax, amax)
+        xlims := (-amax, amax)
+        ylims := (-amax, amax)
         Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
             Seis.trace(Seis.cut(n_orig, s.window_start, s.window_end))
     end
@@ -151,12 +152,12 @@ RecipesBase.@recipe function f(s::Result)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
-        xlabel := "East"
-        ylabel := "North"
+        xguide := "East"
+        yguide := "North"
         xticks --> nothing
         yticks --> nothing
-        xlim := (-amax, amax)
-        ylim := (-amax, amax)
+        xlims := (-amax, amax)
+        ylims := (-amax, amax)
         n, e = deepcopy.((n_orig, e_orig))
         SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
         Seis.cut!.((n, e), s.window_start, s.window_end)
