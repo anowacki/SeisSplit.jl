@@ -13,7 +13,7 @@ RecipesBase.@recipe function f(s::Result)
     colorbar := false
     layout := 8
     title := hcat("Input", "Source pol. pre-corr", "Source pol. post-corr",
-                  "Fast-slow pre-corr", "Fast-slow corr", "\$\\lambda_2\$",
+                  "Fast-slow pre-corr", "Fast-slow corr", "Small eigenvalue",
                   "PM pre-corr", "PM post-corr", "")
     titlefontsize --> 11
     legendfontsize --> 8
@@ -121,8 +121,8 @@ RecipesBase.@recipe function f(s::Result)
     RecipesBase.@series begin
         subplot := 6
         seriestype := :scatter
-        xguide --> "\$\\delta \\mathrm{t} \\, / \\, \\mathrm{s}\$"
-        yguide --> "\$\\phi \\, / \\, ^\\circ\$"
+        xguide --> "dt / s"
+        yguide --> "phi / deg"
         xlims := extrema(s.dt)
         ylims := extrema(s.phi)
         label := ""
