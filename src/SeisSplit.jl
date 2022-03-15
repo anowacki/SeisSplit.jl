@@ -89,7 +89,15 @@ const SPLIT_NPHI = 181
 const SPLIT_DT_MAX = 4.0
 
 """
+  Result{T,V}
+
 Struct containing the results of shear wave splitting analysis.
+
+Note that the two trace fields, `trace1` and `trace2` may not be in the same order
+as originally given to the [`splitting`](@ref) function.  This is because
+they are re-ordered so that `trace2` is clockwise of `trace1`.  Hence the
+frame of reference in which this result is measured is determined by the
+two traces' orientations.
 """
 struct Result{T,V}
     "Range of values of ϕ over which we searched (° clockwise from north)"
