@@ -1,13 +1,21 @@
 import RecipesBase
 
 """
-    plot(s::SeisSplit.Result) -> ::Plots.Plot
+    plot(s::SeisSplit.Result; max_samples=1000, antialias=true) -> ::Plots.Plot
 
 Plot the results of shear wave splitting analysis from the `SeisSplit.splitting` function.
+
+# Keyword arguments
+- `antialias = true`: Control whether decimation of traces for plotting purposes
+  uses antialising to avoid spurious signals.  `true` will avoid spurious aliasing
+  signals, whilst `false` may be quicker.
+- `max_samples = 1000`: Maximum number of samples to plot in the trace and particle
+  motion subplots.  Windows or traces with more than this number are decimated to
+  below this number to speed up plotting.
 """
 plot
 
-RecipesBase.@recipe function f(s::Result)
+RecipesBase.@recipe function f(s::Result; max_samples=1000, antialias=true)
     grid --> false
     framestyle --> :box
     colorbar := false
@@ -18,8 +26,12 @@ RecipesBase.@recipe function f(s::Result)
     titlefontsize --> 11
     legendfontsize --> 8
 
+
     # Input traces in N-E orientation
     n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
+
+    # Tuple of window limits
+    window = s.window_start, s.window_end
 
     ## Input traces in original orientation with analysis window highlighted
     # Analysis window in colour behind traces
@@ -32,7 +44,9 @@ RecipesBase.@recipe function f(s::Result)
     RecipesBase.@series begin
         subplot := 1
         label := [s.trace1.sta.cha s.trace2.sta.cha]
-        Seis.times(s.trace1), [Seis.trace(s.trace1) Seis.trace(s.trace2)]
+        trace1, trace2 = _decimate_to_max_samples.((s.trace1, s.trace2), max_samples,
+            antialias)
+        Seis.times(trace1), [Seis.trace(trace1) Seis.trace(trace2)]
     end
     # Window limits
     RecipesBase.@series begin
@@ -41,14 +55,15 @@ RecipesBase.@recipe function f(s::Result)
         label := ""
         linecolor := :red
         linewidth := 1
-        [s.window_start, s.window_end]
+        [window...]
     end
 
     ## Rotated to spol
     RecipesBase.@series begin
         subplot := 2
-        spol, spol_90 = Seis.cut.(Seis.rotate_through(n_orig, e_orig, 180-s.spol),
-                                 s.window_start, s.window_end)
+        spol, spol_90 = _decimate_to_max_samples.(
+            Seis.rotate_through(n_orig, e_orig, 180-s.spol),
+            max_samples, antialias, Ref(window))
         label := ""
         linecolor := [:blue :red]
         Seis.times(spol), [Seis.trace(spol), Seis.trace(spol_90)]
@@ -59,32 +74,41 @@ RecipesBase.@recipe function f(s::Result)
         subplot := 3
         label := ""
         linecolor := [:blue :red]
-        n, e = deepcopy.((n_orig, e_orig))
-        SeisSplit.apply_split!(Seis.cut!.((n, e), s.window_start, s.window_end)...,
-                               s.phi_best, -s.dt_best)
+        n, e = _decimate_to_max_samples.((n_orig, e_orig), max_samples, antialias, Ref(window))
+        SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
         fast, slow = Seis.rotate_through(n, e, 180-s.spol)
         Seis.times(fast), [Seis.trace(fast), Seis.trace(slow)]
     end
 
     ## Fast and slow before dt shift
-    sfast, sslow = Seis.cut.(Seis.rotate_through(n_orig, e_orig, s.phi_best),
-                             s.window_start, s.window_end)
+    sfast, sslow = Seis.rotate_through!.(_decimate_to_max_samples.((n_orig, e_orig), max_samples,
+        antialias, Ref(window))..., s.phi_best)
+    # Flip slow wave if opposite polarity to make it easier to see if traces line up
+    slow_polarity = let p = _apparent_polarity(sfast, sslow)
+        # Account for zero polarity if traces not correlated at all
+        p == 0 ? 1 : p
+    end
     RecipesBase.@series begin
         subplot := 4
         label := ""
         legend := false
         linecolor := [:blue :red]
-        Seis.times(sfast), [Seis.trace(sfast), Seis.trace(sslow)]
+        xlims := window
+        Seis.times(sfast), [Seis.trace(sfast), slow_polarity.*Seis.trace(sslow)]
     end
 
     ## Fast and slow after dt shift
     RecipesBase.@series begin
         subplot := 5
+        label := ""
         legend := false
         linecolor := [:blue :red]
-        xlims := (s.window_start, s.window_end)
-        # Fake the shift by changing sample times
-        [Seis.times(sfast), Seis.times(sslow) .- s.dt_best], [Seis.trace(sfast), Seis.trace(sslow)]
+        xlims := window
+        n, e = _decimate_to_max_samples.((n_orig, e_orig), max_samples, antialias, Ref(window))
+        # Note we are taking the splitting off, hence -δt
+        SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
+        fast, slow = Seis.rotate_through(n, e, s.phi_best)
+        [Seis.times(fast), Seis.times(slow)], [Seis.trace(fast), slow_polarity.*Seis.trace(slow)]
     end
 
     ## λ₂ surface
@@ -142,8 +166,9 @@ RecipesBase.@recipe function f(s::Result)
         yticks --> nothing
         xlims := (-amax, amax)
         ylims := (-amax, amax)
-        Seis.trace(Seis.cut(e_orig, s.window_start, s.window_end)),
-            Seis.trace(Seis.cut(n_orig, s.window_start, s.window_end))
+        x, y = _decimate_to_max_samples.((e_orig, n_orig), max_samples, antialias,
+            Ref(window))
+        Seis.trace(x), Seis.trace(y)
     end
 
     ## Particle motion after correction
@@ -160,8 +185,8 @@ RecipesBase.@recipe function f(s::Result)
         ylims := (-amax, amax)
         n, e = deepcopy.((n_orig, e_orig))
         SeisSplit.apply_split!(n, e, s.phi_best, -s.dt_best)
-        Seis.cut!.((n, e), s.window_start, s.window_end)
-        Seis.trace(e), Seis.trace(n)
+        y, x = _decimate_to_max_samples.((n, e), max_samples, antialias, Ref(window))
+        Seis.trace(x), Seis.trace(y)
     end
 
     ## Empty plot at bottom right
@@ -170,4 +195,35 @@ RecipesBase.@recipe function f(s::Result)
     #     framestyle := :empty
     #     nothing
     # end
+end
+
+"""
+    _decimate_to_max_samples(t, max_samples, antialias[, cut]) -> t′
+
+Return a new trace `t′` cut between `cut[1]` and `cut[2]`, and decimated such that
+its number of samples is less than or equal to `max_samples`.  If `antialias`
+is `true`, then an antialiasing filter is applied; otherwise it is not.
+"""
+function _decimate_to_max_samples(t, max_samples, antialias, cut=(Seis.starttime(t), Seis.endtime(t)))
+    max_samples > 10 || throw(ArgumentError("`max_samples` must be 10 or more"))
+    t_cut = Seis.cut(t, cut...)
+    n = Seis.nsamples(t_cut)
+    decimation = 1
+    while n/decimation > max_samples
+        decimation += 1
+    end
+    Seis.decimate!(t_cut, decimation, antialias=antialias)
+end
+
+"""
+    _apparent_polarity(fast, slow) -> -1/0/1
+
+Return `1` if the `fast` and `slow` traces are positively correlated,
+`-1` if they are negatively correlated, and `0` if their maximum
+absolute cross-correlation is exactly 0.
+"""
+function _apparent_polarity(fast, slow)
+    minval, maxval = extrema(DSP.xcorr(Seis.trace(fast), Seis.trace(slow)))
+    max_xc = abs(minval) > abs(maxval) ? minval : maxval
+    sign(max_xc)
 end
