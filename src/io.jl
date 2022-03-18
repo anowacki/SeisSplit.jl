@@ -33,6 +33,45 @@ function Base.show(io::IO, ::MIME"text/plain", s::Result{T,V}) where {T,V}
 end
 
 """
+    write_result(file, s::Result; header=true)
+
+Write a shear wave splitting result `s` to `file` in SeisSplit's
+custom plain-text format.
+"""
+function write_result(io::IO, s::Result; header=true)
+    cartesian = typeof(s.trace1.sta.pos) <: Seis.Cartesian
+    if header
+        header_string = cartesian ?
+            "# net.sta.loc.cha1 net.sta.loc.cha2 evt_x evt_y evt_z sta_x sta_y sta_z distance azimuth backazimuth phi dphi dt ddt spol dspol win1 win2 phi1 phi2 nphi dt_max ndt Q" :
+            "# net.sta.loc.cha1 net.sta.loc.cha2 evt_lon evt_lat evt_dep sta_lon sta_lat sta_ele distance azimuth backazimuth phi dphi dt ddt spol dspol win1 win2 phi1 phi2 nphi dt_max ndt Q"
+        println(io, header_string)
+    end
+    sta = s.trace1.sta
+    evt = s.trace2.evt
+    sta_pos = cartesian ? join((sta.x, sta.y, sta.z), ' ') : join((sta.lon, sta.lat, -sta.dep), ' ')
+    evt_pos = cartesian ? join((evt.x, evt.y, evt.z), ' ') : join((evt.lon, evt.lat, evt.dep), ' ')
+    println(io, join(
+        (Seis.channel_code(s.trace1), Seis.channel_code(s.trace2),
+         evt_pos, sta_pos, cartesian ? Seis.distance_direct(s.trace1) : Seis.distance_deg(s.trace1),
+         Seis.azimuth(s.trace1), Seis.backazimuth(s.trace1),
+         s.phi_best, s.dphi, s.dt_best, s.ddt, s.spol, s.dspol,
+         s.window_start, s.window_end,
+         first(s.phi), last(s.phi), length(s.phi),
+         maximum(s.dt), length(s.dt),
+         quality(s)
+        ), ' ')
+    )
+end
+
+"""
+    write_result(io, s::Result; header=true)
+
+Write a result to an `IO` object.
+"""
+write_result(file, s::Result; header=true) =
+    open(io -> write_result(io, s; header), file, "w")
+
+"""
     write_fasst_result_file(file, s::Result; header=trye)
 
 Write the a shear wave splitting result `s` to `file` in FASST format.

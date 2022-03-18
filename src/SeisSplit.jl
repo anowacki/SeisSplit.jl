@@ -78,7 +78,8 @@ export
     quality,
     rotation_correlation,
     snr_restivo_helffrich,
-    splitting
+    splitting,
+    write_result
 
 
 "Default number of δt points to search over"
