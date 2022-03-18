@@ -14,11 +14,20 @@ function Base.show(io::IO, ::MIME"text/plain", s::Result{T,V}) where {T,V}
             println(lpad(String(f), maxlen), ": ", out)
         elseif f in (:lam1, :lam2, :xcorr_dt, :xcorr_phi, :xcorr_map)
             λ = getfield(s, f)
-            siz = join(size(λ), "×")
-            println(lpad(String(f), maxlen), ": ", siz,
-                " Array{$(eltype(λ)),$(ndims(λ))}: [", λ[1], ", ..., ", λ[2], "]")
+            if !isnothing(λ)
+                siz = join(size(λ), "×")
+                println(io, lpad(String(f), maxlen), ": ", siz,
+                    " Array{$(eltype(λ)),$(ndims(λ))}: [", λ[1], ", ..., ", λ[2], "]")
+            else
+                println(io, lpad(String(f), maxlen), ": (not calculated)")
+            end
         else
-            println(lpad(String(f), maxlen), ": ", getfield(s, f), unit)
+            val = getfield(s, f)
+            if !isnothing(val)
+                println(io, lpad(String(f), maxlen), ": ", getfield(s, f), unit)
+            else
+                println(io, lpad(String(f), maxlen), ": (not calculated)")
+            end
         end
     end
 end
