@@ -140,6 +140,9 @@ struct Result{T,V}
     xcorr_phi_best
     "Maximum cross correlation point in δt (s)"
     xcorr_dt_best
+    "Frame of reference for ϕ: `:geographic` for azimuth from north; `:trace` for
+    `trace1` to `trace2`"
+    reference_frame
 end
 
 include("utils.jl")

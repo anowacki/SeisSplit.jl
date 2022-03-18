@@ -10,9 +10,10 @@ read_test_data() = Seis.read_sac.(joinpath(@__DIR__, "data", "wave.BH").*("E", "
 "Test that all fields are approximately equal for two `SeisSplit.Result`s"
 function splits_are_equal(s, s′, atol=0.01)
     for f in fieldnames(SeisSplit.Result)
-        f in (:trace1, :trace2, :xcorr_map) && continue # Don't compare traces themselves
+        f in (:trace1, :trace2, :xcorr_map, :reference_frame) && continue # Don't compare traces themselves
         @test getfield(s, f) ≈ getfield(s′, f) atol=atol
     end
+    @test s.reference_frame == s′.reference_frame
 end
 
 

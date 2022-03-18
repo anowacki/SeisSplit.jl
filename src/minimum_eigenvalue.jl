@@ -38,8 +38,15 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
                    window_start=Seis.starttime(t1), window_end=Seis.endtime(t1);
                    xcorr=true,
                    nphi=SPLIT_NPHI, ndt=SPLIT_NDT, dt_max=SPLIT_DT_MAX) where {T,V}
-    t1, t2 = check_trace_order(t1, t2) # t2 is now clockwise of t1
-    n, e = Seis.rotate_through(t1, t2, -t1.sta.azi)
+    # Special case for two horizontal components: assume we want our
+    # fast orientations to be in the geographic frame (azimuths rel. north)
+    n, e, frame = if all(Seis.is_horizontal, (t1, t2))
+        t1, t2 = check_trace_order(t1, t2) # t2 is now clockwise of t1
+        n, e = Seis.rotate_through(t1, t2, -t1.sta.azi)
+        n, e, :geographic
+    else
+        deepcopy(t1), deepcopy(t2), :trace
+    end
     Seis.cut!.((n, e), window_start, window_end)
     phi = range(-90., stop=90., length=nphi)
     dt = range(0.0, stop=dt_max, length=ndt)
@@ -78,7 +85,9 @@ function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
     Result(phi, dt, lam1, lam2, phi_best, dphi, dt_best, ddt, spol, dspol, t1, t2,
            window_start, window_end, ν,
            # rotation correlation parameters
-           xc_phi, xc_time, xc_map, xc_phi_best, xc_dt_best)
+           xc_phi, xc_time, xc_map, xc_phi_best, xc_dt_best,
+           # reference frame
+           frame)
 end
 
 """
