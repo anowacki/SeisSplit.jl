@@ -11,18 +11,23 @@ shear wave splitting operators, up to `dt_max` s.
 
 `results` is a `SeisSplit.Result` containing:
 
-- `phi`: The set of fast shear wave orientations in °
-- `dt`: The set of delays times in s
+- `phi`: The set of fast shear wave orientations (°)
+- `dt`: The set of delays times (s)
 - `lam1`: The larger eigenvalues at each [phi,dt] point
 - `lam2`: The smaller eigenvalues at each point
-- `phi_best` and `dphi`: The best ϕ and its 1σ uncertainty.  ϕ is measured
-  clockwise from local north (towards east) in °.
-- `dt_best` and `ddt`: The best δt and its 1σ uncertainty, in s
+- `phi_best` and `dphi`: The best ϕ and its 1σ uncertainty (°).  ϕ is measured
+  clockwise from local north (towards east) if both input traces are horizontal;
+  otherwise the angle is measured from `t1` to `t2`.
+- `dt_best` and `ddt`: The best δt and its 1σ uncertainty (s)
 - `spol` and `dspol`: The source polarisation and an estimate of its uncertainty for the
-  best-fitting ϕ and δt.  `spol` is given in ° clockwise of local north.
-- `trace1` and `trace2`, the original input traces, where `trace2` is clockwise of `trace1`
-- `window_start`, `window_end`, the analysis time window end points.
-- `ndf`, the number of degrees of freedom in the signal.
+  best-fitting ϕ and δt (°).  `spol` is given with the same convention as `phi_best`.
+- `trace1` and `trace2`: The original input traces, where `trace2` is clockwise of `trace1`
+  if both are horizontal, and they are `t1` and `t2` otherwise.
+- `window_start`, `window_end`: The analysis time window end points (s)
+- `ndf`: The number of degrees of freedom in the signal
+- `reference_frame`: A record of whether the fast orientation and polarisation
+  represent the azimuth from north (`:geographic`) or simply the angle
+  from the first trace to the second (`:trace`).
 
 If `xcorr` is `true`, then the rotation correlation map for the pair
 of traces is also computed and the following additional fields are
@@ -33,6 +38,39 @@ present in `results`:
 - `xcorr_map`: Cross correlation at each [phi,dt] point
 - `xcorr_phi_best`: Fast orientation of maximum cross correlation (°)
 - `xcorr_dt_best`: Delay time of maximum cross correlation (s)
+
+# Examples
+```
+julia> using SeisSplit, Seis
+
+julia> datadir = joinpath(dirname(pathof(SeisSplit)), "..", "test", "data");
+
+julia> e, n, z = read_sac("wave.BH?", datadir);
+
+julia> s = splitting(e, n, 10, 40)
+SeisSplit.Result{Float32,Vector{Float32}}:
+            phi: -90.0:1.0:90.0
+             dt: 0.0:0.1:4.0
+           lam1: 181×41 Array{Float32,2}: [68.223114, ..., 68.223114]
+           lam2: 181×41 Array{Float32,2}: [26.539673, ..., 26.539673]
+       phi_best: 40.0 °
+           dphi: 0.5 °
+        dt_best: 1.4 s
+            ddt: 0.025 s
+           spol: 10.005173 °
+          dspol: 0.34458166 °
+         trace1: Seis.Trace(.SWAV..BHN: delta=0.05, b=0.0, nsamples=1999)
+         trace2: Seis.Trace(.SWAV..BHE: delta=0.05, b=0.0, nsamples=1999)
+   window_start: 10 s
+     window_end: 40 s
+            ndf: 432
+      xcorr_phi: 90 Array{Float64,1}: [-90.0, ..., -88.0]
+       xcorr_dt: 81 Array{Float32,1}: [0.0, ..., 0.05]
+      xcorr_map: 81×90 Array{Float32,2}: [0.48380473, ..., 0.5127925]
+ xcorr_phi_best: 42.0 °
+  xcorr_dt_best: 1.35 s
+reference_frame: geographic
+```
 """
 function splitting(t1::Seis.Trace{T,V}, t2::Seis.Trace{T,V},
                    window_start=Seis.starttime(t1), window_end=Seis.endtime(t1);
