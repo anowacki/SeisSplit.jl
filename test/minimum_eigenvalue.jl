@@ -46,4 +46,10 @@
             @test s.ndf ≈ 462 atol=2
         end
     end
+    @tesetset "Reference frame" begin
+        e, n = read_test_data()
+        @test splitting(e, n).reference_frame == :geographic
+        n.sta.inc = 45
+        @test splitting(e, n).reference_frame == :trace
+    end
 end
