@@ -33,7 +33,7 @@ lam_ratio(s::Result) = lam2_ratio(s)/lam1_ratio(s)
 Return the quality index `Q`, which is 1 for a perfect splitting measurement,
 -1 for a perfect null, and 0 for a poor measurement.
 
-See Wuestefeld et al. (Geophysical Prospecting, 2010) for details.
+See Wuestefeld et al. (2010) for details.
 
 # Reference
 - Wuestefeld, A., Al-Harrasi, O., Verdon, J.P., Wookey, J., Kendall, J.-M., 2010.
@@ -62,7 +62,7 @@ end
 """
     snr_restivo_helffrich(result) -> SNR
 
-Return the signal-to-noise ratio as defined by Restivo & Helffrich (GJI, 1999):
+Return the signal-to-noise ratio as defined by Restivo & Helffrich (1999):
 the signal is the maximum absolute amplitude of the corrected trace in the
 source polarisation orientation, and the noise is the 2σ.
 
