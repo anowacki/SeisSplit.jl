@@ -75,6 +75,7 @@ export
     lam_ratio,
     lam1_ratio,
     lam2_ratio,
+    plot_result,
     quality,
     rotation_correlation,
     snr_restivo_helffrich,
@@ -152,5 +153,6 @@ include("qc.jl")
 include("minimum_eigenvalue.jl")
 include("rotation_correlation.jl")
 include("plots.jl")
+include("makie.jl")
 
 end # module

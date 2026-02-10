@@ -112,18 +112,32 @@ present in `results`:
 ### Plotting results
 
 You can create a diagnostic plot of a `SeisSplit.Result` by loading
-[`Plots.jl`](https://github.com/JuliaPlots/Plots.jl) and calling `plot()` on the result:
+a [Makie.jl](https://docs.makie.org/stable/)
+[backend](https://docs.makie.org/stable/explanations/backends/backends)
+such as `GLMakie` and calling `plot()` on the result:
 
 ```julia
-julia> using Plots
+julia> using GLMakie
 
 julia> plot(s)
 ```
 
 ![Example of a SeisSplit diagnostic plot](docs/images/diagnostic_plot_example.svg)
 
-(Note that Plots.jl must be included in the current environment; if it
-is not, then simply do `import Pkg; Pkg.add("Plots")` first.)
+(Note that a Makie backend must be included in the current environment; if it
+is not, then add one by doing e.g. `import Pkg; Pkg.add("CairoMakie")` first,
+for your chosen backend(s).)
+
+#### Legacy plotting with Plots.jl
+As an unmaintained, legacy option, plotting with Plots.jl is also supported
+for now.  Again, you should `Pkg.add("Plots")` to add Plots to your
+environment, and then you can do:
+
+```julia
+julia> using Plots
+
+julia> plot(s)
+```
 
 ### Result quality
 
