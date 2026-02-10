@@ -75,10 +75,12 @@ export
     lam_ratio,
     lam1_ratio,
     lam2_ratio,
+    plot_result,
     quality,
     rotation_correlation,
     snr_restivo_helffrich,
-    splitting
+    splitting,
+    write_result
 
 
 "Default number of δt points to search over"
@@ -140,6 +142,9 @@ struct Result{T,V}
     xcorr_phi_best
     "Maximum cross correlation point in δt (s)"
     xcorr_dt_best
+    "Frame of reference for ϕ: `:geographic` for azimuth from north; `:trace` for
+    `trace1` to `trace2`"
+    reference_frame
 end
 
 include("utils.jl")
@@ -148,5 +153,6 @@ include("qc.jl")
 include("minimum_eigenvalue.jl")
 include("rotation_correlation.jl")
 include("plots.jl")
+include("makie.jl")
 
 end # module

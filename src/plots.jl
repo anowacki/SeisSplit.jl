@@ -25,10 +25,19 @@ RecipesBase.@recipe function f(s::Result; max_samples=1000, antialias=true)
                   "PM pre-corr", "PM post-corr", "")
     titlefontsize --> 11
     legendfontsize --> 8
+    fontfamily --> "Helvetica"
+    size --> (600, 600)
 
 
-    # Input traces in N-E orientation
-    n_orig, e_orig = Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)
+    # Input traces and whether we are now in the N-E frame
+    n_orig, e_orig, traces_n_e = if all(Seis.is_horizontal, (s.trace1, s.trace2))
+        # Rotated to N-E if horizontal
+        (Seis.rotate_through(s.trace1, s.trace2, -s.trace1.sta.azi)..., true)
+    else
+        # Otherwise just in the input orientation and hence ϕ is from
+        # trace1 to trace2
+        (s.trace1, s.trace2, false)
+    end
 
     # Tuple of window limits
     window = s.window_start, s.window_end
@@ -160,8 +169,8 @@ RecipesBase.@recipe function f(s::Result; max_samples=1000, antialias=true)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
-        xguide := "East"
-        yguide := "North"
+        xguide := traces_n_e ? "East" : e_orig.sta.cha
+        yguide := traces_n_e ? "North" : n_orig.sta.cha
         xticks --> nothing
         yticks --> nothing
         xlims := (-amax, amax)
@@ -177,8 +186,8 @@ RecipesBase.@recipe function f(s::Result; max_samples=1000, antialias=true)
         aspect_ratio := :equal
         label := ""
         linecolor --> :black
-        xguide := "East"
-        yguide := "North"
+        xguide := traces_n_e ? "East" : e_orig.sta.cha
+        yguide := traces_n_e ? "North" : n_orig.sta.cha
         xticks --> nothing
         yticks --> nothing
         xlims := (-amax, amax)
