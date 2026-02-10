@@ -1,7 +1,7 @@
 name = "SeisSplit"
 uuid = "f05a75a8-0205-5d86-a1c6-ce5881d793bb"
 authors = ["Andy Nowacki <a.nowacki@leeds.ac.uk>"]
-version = "0.5.2"
+version = "0.6.0"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
