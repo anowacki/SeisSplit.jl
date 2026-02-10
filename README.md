@@ -1,5 +1,8 @@
 # SeisSplit
 
+[![Build Status](https://github.com/anowacki/SeisSplit.jl/workflows/CI/badge.svg)](https://github.com/anowacki/SeisSplit.jl/actions)
+[![codecov](https://codecov.io/gh/anowacki/SeisSplit.jl/branch/master/graph/badge.svg?token=d0ePcA1m54)](https://codecov.io/gh/anowacki/SeisSplit.jl)
+
 SeisSplit is a package for measuring shear wave splitting using the
 minimum eigenvalue method of Silver & Chan (1991), as modified by
 Walsh et al. (2013).
