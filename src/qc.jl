@@ -74,7 +74,7 @@ source polarisation orientation, and the noise is the 2σ.
 function snr_restivo_helffrich(s::Result)
     N, E = deepcopy.((s.trace1, s.trace2))
     Seis.cut!.((N, E), s.window_start, s.window_end)
-    rotate_traces!(N, E, -N.sta.azi) # Now in N-E frame
+    rotate_traces!(N, E, N.sta.azi) # Now in N-E frame
     apply_split!(N, E, s.phi_best, -s.dt_best)
     rotate_traces!(N, E, -s.spol) # Now in spol-(spol+90) frame
     signal = maximum(abs, Seis.trace(N))
