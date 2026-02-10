@@ -17,10 +17,13 @@ purposes.
 
 ## Installing
 
+Julia v1.11 or later is required.
+
+To install, do:
 ```julia
 julia> ] # Press ']' to get to package mode
 
-(@v1.7) pkg> add https://github.com/anowacki/Geodesics.jl https://github.com/anowacki/Seis.jl https://github.com/anowacki/SeisSplit.jl
+(@v1.7) pkg> https://github.com/anowacki/SeisSplit.jl
 ```
 
 ## Using
