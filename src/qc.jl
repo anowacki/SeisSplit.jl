@@ -64,7 +64,10 @@ end
 
 Return the signal-to-noise ratio as defined by Restivo & Helffrich (1999):
 the signal is the maximum absolute amplitude of the corrected trace in the
-source polarisation orientation, and the noise is the 2σ.
+source polarisation orientation, and the noise is twice the standard deviation
+of the amplitudes in the trace 90° to the source polarisation orientation.
+If splitting is correctly applied, there should be no signal left on
+the latter component.
 
 # Reference
 - Restivo, A., Helffrich, G., 1999. Teleseismic shear wave splitting
