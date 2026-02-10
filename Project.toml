@@ -26,6 +26,11 @@ Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
 [extensions]
 SeisSplitMakieExt = "Makie"
 
+[compat]
+julia = "1.11"
+Makie = "0.22, 0.23, 0.24"
+StaticArrays = "0.12, 1"
+
 [extras]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Makie = "ee78f7c6-11fb-53f2-987a-cfe4a2b5a57a"
